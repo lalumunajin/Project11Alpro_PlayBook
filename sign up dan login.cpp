@@ -147,8 +147,6 @@ string currentUsername = "";
 string currentRole     = "";
 int    memberLoginIdx  = -1;
 
-
-
 string currentUsername = "";
 string currentRole = "";
 int memberLoginIdx = -1;
