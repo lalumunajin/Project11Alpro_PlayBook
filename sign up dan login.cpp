@@ -100,7 +100,6 @@ void login() {
     tengah("MASUK KE AKUN", 105);
     garisBatas();
 
-    // Tampilkan pesan jika belum ada akun terdaftar sama sekali
     if (jumlahMember == 0 && daftarOperator.count == 0) {
         tengah("Belum ada akun! Silakan daftar terlebih dahulu.", 105);
         garisBatas();
