@@ -83,6 +83,72 @@ struct dataOperator {
 } daftarOperator;
 int operatorLoginIdx = -1;
 
+struct UnitPS {
+    int    id;
+    string tipe;         
+    string status;       
+    int    hargaPerJam;
+};
+
+UnitPS daftarUnit[10] = {
+    {1,  "PS4 Reguler", "Tersedia", 8000 },
+    {2,  "PS4 Reguler", "Tersedia", 8000 },
+    {3,  "PS4 Reguler", "Tersedia", 8000 },
+    {4,  "PS4 VIP    ", "Tersedia", 12000},
+    {5,  "PS4 VIP    ", "Tersedia", 12000},
+    {6,  "PS4 VIP    ", "Tersedia", 12000},
+    {7,  "PS5 Reguler", "Tersedia", 15000},
+    {8,  "PS5 Reguler", "Tersedia", 15000},
+    {9,  "PS5 VIP    ", "Tersedia", 20000},
+    {10, "PS5 VIP    ", "Tersedia", 20000}
+};
+
+UnitPS daftarUnit[10] = {
+    {1,  "PS4 Reguler", "Tersedia", 8000 },
+    {2,  "PS4 Reguler", "Tersedia", 8000 },
+    {3,  "PS4 Reguler", "Tersedia", 8000 },
+    {4,  "PS4 VIP    ", "Tersedia", 12000},
+    {5,  "PS4 VIP    ", "Tersedia", 12000},
+    {6,  "PS4 VIP    ", "Tersedia", 12000},
+    {7,  "PS5 Reguler", "Tersedia", 15000},
+    {8,  "PS5 Reguler", "Tersedia", 15000},
+    {9,  "PS5 VIP    ", "Tersedia", 20000},
+    {10, "PS5 VIP    ", "Tersedia", 20000}
+};
+
+struct Booking {
+    string memberUsername; 
+    string memberName;     
+    int    unitId;         
+    string tipePS;         
+    int    durasi;        
+    int    totalHarga;    
+    int    poinDapat;      
+    string status;         
+};
+Booking daftarBooking[100]; 
+int jumlahBooking = 0;
+
+BarangRedeem daftarBarang[] = {
+    {"Snack Gratis        ", 20 },
+    {"Minuman Gratis      ", 15 },
+    {"Extend 30 Menit     ", 25 },
+    {"Gratis 1 Jam PS4    ", 50 },
+    {"Gratis 1 Jam PS5    ", 80 },
+    {"Merchandise PlayBook", 100}
+};
+const int jumlahBarang = 6;
+
+string historyRedeem[100]; 
+int    jumlahHistory   = 0; 
+int    totalPendapatan = 0; 
+
+string currentUsername = "";
+string currentRole     = "";
+int    memberLoginIdx  = -1;
+
+
+
 string currentUsername = "";
 string currentRole = "";
 int memberLoginIdx = -1;
