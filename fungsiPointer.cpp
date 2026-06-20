@@ -4,15 +4,6 @@ using namespace std;
 
 char navigasi;
 
-void efekLoading(string proses) {
-    cout << proses;
-    for (int i = 0; i < 3; i++) {
-        cout << ". ";
-        sleep(1);
-    }
-    cout << endl;
-}
-
 void banner() {
     for (int i = 0; i < 105; i++) cout << "="; cout << endl;
     cout << "\033[36m" << R"(
