@@ -2,15 +2,17 @@
 #include <conio.h> 
 using namespace std;
 
-char navigasi;
-void efekLoading(string proses) {
-    cout << proses;
-    for (int i = 0; i < 3; i++) {
-        cout << ". ";
-    }
-    cout << endl;
-}
+#define RED    "\033[31m"
+#define GREEN  "\033[32m"
+#define YELLOW "\033[33m"
+#define CYAN   "\033[36m"
+#define RESET  "\033[0m"
 
+string pad(string teks, int lebar, bool kiri = true) {
+    if ((int)teks.length() >= lebar) return teks;
+    string spasi(lebar - (int)teks.length(), ' ');
+    return kiri ? teks + spasi : spasi + teks;
+}
 
 void banner() {
     for (int i = 0; i < 105; i++) cout << "="; cout << endl;
@@ -35,19 +37,9 @@ void tengah(string teks, int kolom) {
     cout << "|" << string(spasiKiri, ' ') << teks << string(spasiKanan, ' ') << "|\n";
 }
 
-void garis() {
-    for (int i = 0; i < 105; i++) cout << "="; cout << endl;
-}
-
-void garisBatas() {
-    cout << "|";
-    for (int i = 0; i < 103; i++) cout << "=";
-    cout << "|" << endl;
-}
-
-string select(string teks) {
-    return "\033[36m" + teks + "\033[0m";
-}
+void garis()      { for (int i = 0; i < 105; i++) cout << "="; cout << endl; }
+void garisBatas() { cout << "|"; for (int i = 0; i < 103; i++) cout << "="; cout << "|" << endl; }
+string select(string teks) { return string(CYAN) + teks + RESET; }
 
 void bersihkanBuffer() {
     cin.clear();
@@ -59,6 +51,25 @@ string inputString() {
     if (cin.peek() == '\n') cin.ignore();
     getline(cin, hasil);
     return hasil;
+}
+
+string formatRupiah(int angka) {
+    string hasil = to_string(angka);
+    int pos = (int)hasil.length() - 3;
+    while (pos > 0) { hasil.insert(pos, "."); pos -= 3; }
+    return "Rp " + hasil;
+}
+
+void baris5(string k1, int w1, string k2, int w2, string k3, int w3,
+            string warnaK3, string k4, int w4, string k5, int w5) {
+    cout << "| " << pad(k1, w1) << "| " << pad(k2, w2) << "| "
+         << warnaK3 << pad(k3, w3) << RESET << "| "
+         << pad(k4, w4, false) << "| " << pad(k5, w5) << "|" << endl;
+}
+
+void cetakStatistik(string label, string nilai) {
+    string titik(48, '.');
+    cout << "|  " << pad(label, 25) << titik << " " << pad(nilai, 24) << "|" << endl;
 }
 
 struct dataMember {
@@ -151,6 +162,40 @@ string currentUsername = "";
 string currentRole = "";
 int memberLoginIdx = -1;
 
+void tambahPoin(int *poin, int *pemasukanPoin, int *totalJam, int jumlahPoin, int jam) {
+    *poin += jumlahPoin; *pemasukanPoin += jumlahPoin; *totalJam += jam;
+}
+
+void updateStatusUnit(UnitPS *unit, string statusBaru) { unit->status = statusBaru; }
+
+void editProfilMember(string *nama, string *noTelp) {
+    cout << "  Nama baru    : "; *nama   = inputString();
+    cout << "  No. HP baru  : "; *noTelp = inputString();
+}
+
+bool gantiPassword(string *pass) {
+    string oldPass, newPass, konfirm;
+    cout << "  Password lama       : "; cin >> oldPass; bersihkanBuffer();
+    if (oldPass != *pass) { cout << RED << "  Password salah!\n" << RESET; return false; }
+    cout << "  Password baru       : "; cin >> newPass; bersihkanBuffer();
+    cout << "  Konfirmasi password : "; cin >> konfirm; bersihkanBuffer();
+    if (newPass != konfirm) { cout << RED << "  Konfirmasi tidak cocok!\n" << RESET; return false; }
+    *pass = newPass;
+    return true;
+}
+
+void simpanBooking(Booking *arr, int *jumlah, string uname, string nama,
+                    int unitId, string tipe, int durasi, int harga, int poin) {
+    int idx = *jumlah;
+    arr[idx] = {uname, nama, tipe, "Menunggu", unitId, durasi, harga, poin};
+    (*jumlah)++;
+}
+
+void hapusBooking(Booking *arr, int *jumlah, int index) {
+    for (int i = index; i < (*jumlah) - 1; i++) arr[i] = arr[i + 1];
+    (*jumlah)--;
+}
+
 void menuMemberLandscape() {
     cout << "Masuk Menu Member\n";
 }
@@ -163,164 +208,117 @@ void login() {
     system("cls"); banner();
     tengah("MASUK KE AKUN", 105);
     garisBatas();
-
     if (jumlahMember == 0 && daftarOperator.count == 0) {
         tengah("Belum ada akun! Silakan daftar terlebih dahulu.", 105);
-        garisBatas();
-        system("pause"); efekLoading("Loading"); return;
+        garisBatas(); system("pause"); return;
     }
-
     string uname, pass;
     cout << "  Username : "; cin >> uname; bersihkanBuffer();
     cout << "  Password : "; cin >> pass;  bersihkanBuffer();
-    bool found = false;
 
     for (int i = 0; i < jumlahMember; i++) {
         if (daftarMember.username[i] == uname && daftarMember.pass[i] == pass) {
-            currentUsername = uname;
-            currentRole     = "Member";
-            memberLoginIdx  = i;
-            cout << "\n  Login berhasil! Selamat datang, " << daftarMember.name[i] << "!\n";
-            found = true;
-            system("pause"); efekLoading("Loading");
+            currentUsername = uname; currentRole = "Member"; memberLoginIdx = i;
+            cout << GREEN << "\n  Login berhasil! Selamat datang, " << daftarMember.name[i] << "!\n" << RESET;
+            system("pause");
             menuMemberLandscape();
             return;
         }
     }
-
     for (int i = 0; i < daftarOperator.count; i++) {
         if (daftarOperator.username[i] == uname && daftarOperator.pass[i] == pass) {
-            currentUsername  = uname;
-            currentRole      = "Operator";
-            operatorLoginIdx = i;
-            cout << "\n  Login berhasil! Selamat datang, Operator " << daftarOperator.name[i] << "!\n";
-            found = true;
-            system("pause"); efekLoading("Loading");
+            currentUsername = uname; currentRole = "Operator"; operatorLoginIdx = i;
+            cout << GREEN << "\n  Login berhasil! Selamat datang, Operator " << daftarOperator.name[i] << "!\n" << RESET;
+            system("pause");
             menuOperatorLandscape();
             return;
         }
     }
-
-    if (!found) {
-        cout << "\n  Username atau password salah!\n";
-        system("pause"); efekLoading("Loading");
-    }
+    cout << RED << "\n  Username atau password salah!\n" << RESET;
+    system("pause");
 }
 
 void signUp() {
-    int  pilihan = 1;
+    int pilihan = 1;
     char nav;
-
     while (true) {
         system("cls"); banner();
         tengah("DAFTAR AKUN BARU", 105);
         garisBatas();
         tengah("Daftar Sebagai:", 105);
         tengah("", 105);
-        if (pilihan == 1) tengah(select("Member  "), 114);
-        else              tengah("Member  ", 105);
-        if (pilihan == 2) tengah(select("Operator"), 114);
-        else              tengah("Operator", 105);
+        tengah(pilihan == 1 ? select("Member  ") : "Member  ", pilihan == 1 ? 114 : 105);
+        tengah(pilihan == 2 ? select("Operator") : "Operator", pilihan == 2 ? 114 : 105);
         tengah("", 105);
         garis();
 
         nav = getch();
         switch (nav) {
-            case 72: 
-                if (pilihan == 1) pilihan = 2; else pilihan--;
-                break;
-            case 80: 
-                if (pilihan == 2) pilihan = 1; else pilihan++;
-                break;
-            case 13: 
+            case 72: if (pilihan == 1) pilihan = 2; else pilihan--; break;
+            case 80: if (pilihan == 2) pilihan = 1; else pilihan++; break;
+            case 13:
                 if (pilihan == 1) {
-                    
-                    efekLoading("Loading");
                     system("cls"); banner();
                     tengah("DAFTAR SEBAGAI MEMBER", 105);
                     garisBatas();
                     int i = jumlahMember;
-                    
-                    cout << "  Nama Lengkap : "; daftarMember.name[i]     = inputString();
-                    cout << "  Username     : "; cin >> daftarMember.username[i]; bersihkanBuffer();
-                    cout << "  Umur         : "; cin >> daftarMember.umur[i];     bersihkanBuffer();
-                    cout << "  No. HP       : "; daftarMember.noTelp[i]   = inputString();
-                    cout << "  Email        : "; cin >> daftarMember.email[i];    bersihkanBuffer();
-                    cout << "  Password     : "; cin >> daftarMember.pass[i];     bersihkanBuffer();
-
-                    
-                    daftarMember.poin[i]            = 0;
-                    daftarMember.totalJamSewa[i]    = 0;
-                    daftarMember.pemasukanPoin[i]   = 0;
-                    daftarMember.pengeluaranPoin[i] = 0;
+                    daftarMember.name[i]     = inputValidasi("  Nama Lengkap : ", hanyaHuruf, "Nama hanya boleh huruf!");
+                    daftarMember.username[i] = inputValidasi("  Username     : ", hanyaHuruf, "Username hanya boleh huruf!");
+                    daftarMember.umur[i]     = inputUmur("  Umur         : ");
+                    daftarMember.noTelp[i]   = inputValidasi("  No. HP       : ", hanyaAngka, "No. HP harus berupa angka!");
+                    cout << "  Email        : "; cin >> daftarMember.email[i]; bersihkanBuffer();
+                    cout << "  Password     : "; cin >> daftarMember.pass[i];  bersihkanBuffer();
+                    daftarMember.poin[i] = daftarMember.totalJamSewa[i] = 0;
+                    daftarMember.pemasukanPoin[i] = daftarMember.pengeluaranPoin[i] = 0;
                     jumlahMember++;
-
-                    cout << "\n  Pendaftaran berhasil sebagai Member!\n";
-                    system("pause"); efekLoading("Loading"); return;
-
+                    cout << GREEN << "\n  Pendaftaran berhasil sebagai Member!\n" << RESET;
+                    system("pause"); return;
                 } else if (pilihan == 2) {
-                    
-                    efekLoading("Loading");
                     system("cls"); banner();
                     tengah("DAFTAR SEBAGAI OPERATOR", 105);
                     garisBatas();
                     int idx = daftarOperator.count;
-                    cout << "  Nama Lengkap : "; daftarOperator.name[idx]     = inputString();
-                    cout << "  Username     : "; cin >> daftarOperator.username[idx]; bersihkanBuffer();
-                    cout << "  Password     : "; cin >> daftarOperator.pass[idx];     bersihkanBuffer();
+                    daftarOperator.name[idx]     = inputValidasi("  Nama Lengkap : ", hanyaHuruf, "Nama hanya boleh huruf!");
+                    daftarOperator.username[idx] = inputValidasi("  Username     : ", hanyaHuruf, "Username hanya boleh huruf!");
+                    cout << "  Password     : "; cin >> daftarOperator.pass[idx]; bersihkanBuffer();
                     daftarOperator.count++;
-
-                    cout << "\n  Pendaftaran berhasil sebagai Operator!\n";
-                    system("pause"); efekLoading("Loading"); return;
+                    cout << GREEN << "\n  Pendaftaran berhasil sebagai Operator!\n" << RESET;
+                    system("pause"); return;
                 }
                 break;
         }
     }
 }
 
-void mainMenu() { 
-    int  pilihan = 1;
+int main() {
+    int pilihan = 1;
     char nav;
-
     while (true) {
-        system("cls"); banner(); 
+        system("cls"); banner();
         tengah("Selamat Datang di PlayBook!", 105);
         tengah("~ Your Gaming Zone, Anytime ~", 105);
         garisBatas();
         tengah("", 105);
-        if (pilihan == 1) tengah(select("Sign Up"), 114);
-        else              tengah("Sign Up", 105);
-        if (pilihan == 2) tengah(select("Sign In"), 114);
-        else              tengah("Sign In", 105);
-        if (pilihan == 3) tengah(select("Exit   "), 114);
-        else              tengah("Exit   ", 105);
+        tengah(pilihan == 1 ? select("Sign Up") : "Sign Up", pilihan == 1 ? 114 : 105);
+        tengah(pilihan == 2 ? select("Sign In") : "Sign In", pilihan == 2 ? 114 : 105);
+        tengah(pilihan == 3 ? select("Exit   ") : "Exit   ", pilihan == 3 ? 114 : 105);
         tengah("", 105);
         garis();
 
         nav = getch();
         switch (nav) {
-            case 72: 
-                if (pilihan == 1) pilihan = 3; else pilihan--;
-                break;
-            case 80: 
-                if (pilihan == 3) pilihan = 1; else pilihan++;
-                break;
-            case 13: 
-                if (pilihan == 1) {
-                    efekLoading("Loading");
-                    signUp(); 
-                } else if (pilihan == 2) {
-                    efekLoading("Loading");
-                    login();
-                } else if (pilihan == 3) {
-                    efekLoading("Terima kasih telah menggunakan PlayBook");
-                    return;
+            case 72: if (pilihan == 1) pilihan = 3; else pilihan--; break;
+            case 80: if (pilihan == 3) pilihan = 1; else pilihan++; break;
+            case 13:
+                if (pilihan == 1) signUp();
+                else if (pilihan == 2) login();
+                else if (pilihan == 3) {
+                    system("cls");
+                    cout << GREEN << "Terima kasih telah menggunakan PlayBook!\n" << RESET;
+                    return 0;
                 }
                 break;
         }
     }
-}
-int main() {
-    mainMenu();
     return 0;
 }
